@@ -7,6 +7,7 @@ setup(
     version='0.0',    
     packages=find_packages(),
     install_requires=[
+        'torch==2.0.1',
         'trimesh==3.22.3',
         'pyrender==0.1.45',
         'einops==0.6.1',
@@ -23,8 +24,6 @@ setup(
         'gradio==4.18.0',
         'spaces==0.19.4',
 
-        # for training/validation
-        'tensorboard==2.16.2',
 
         # for ehf
         'plyfile==1.0.3',
