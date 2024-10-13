@@ -21,7 +21,7 @@ setup(
         'xformers==0.0.20',
 
         # for huggingface
-        'gradio==4.18.0',
+        'gradio==4.44.1',
         'spaces==0.19.4',
 
 
