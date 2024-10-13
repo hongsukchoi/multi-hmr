@@ -8,12 +8,12 @@ from torch import nn
 import smplx
 import torch
 import numpy as np
-import utils
-from utils import inverse_perspective_projection, perspective_projection
+import multihmr.utils as utils
+from multihmr.utils import inverse_perspective_projection, perspective_projection
 import roma
 import pickle
 import os
-from utils.constants import SMPLX_DIR
+from multihmr.utils.constants import SMPLX_DIR
 
 class SMPL_Layer(nn.Module):
     """

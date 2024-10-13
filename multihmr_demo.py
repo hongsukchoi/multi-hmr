@@ -140,10 +140,23 @@ def overlay_human_meshes(humans, K, model, img_pil, unique_color=False):
 
     return pred_rend_array, _color
 
+def extract_frames_from_video(video_path, img_folder):
+    import cv2
+    cap = cv2.VideoCapture(video_path)
+    frame_count = 0
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        cv2.imwrite(os.path.join(img_folder, f'frame_{frame_count:04d}.jpg'), frame)
+        frame_count += 1
+    cap.release()
+    return frame_count
 if __name__ == "__main__":
         parser = ArgumentParser()
         parser.add_argument("--model_name", type=str, default='multiHMR_896_L_synth')
-        parser.add_argument("--img_folder", type=str, default='example_data')
+        parser.add_argument("--img_folder", type=str, default='example_data/images')
+        parser.add_argument("--video_path", type=str, default='') # 'example_data/video/gymnasts.mp4'
         parser.add_argument("--out_folder", type=str, default='demo_out')
         parser.add_argument("--save_mesh", type=int, default=0, choices=[0,1])
         parser.add_argument("--extra_views", type=int, default=0, choices=[0,1])
@@ -180,8 +193,18 @@ if __name__ == "__main__":
             print('SMPL mean params is already here')
 
         # Input images
-        suffixes = ('.jpg', '.jpeg', '.png', '.webp')
-        l_img_path = [file for file in os.listdir(args.img_folder) if file.endswith(suffixes) and file[0] != '.']
+        if args.video_path:
+            # extract frames from video
+            img_folder = args.video_path.replace('.mp4', '')
+            if not os.path.exists(img_folder):
+                Path(img_folder).mkdir(parents=True, exist_ok=True)
+                frame_count = extract_frames_from_video(args.video_path, img_folder)
+            else:
+                frame_count = len(os.listdir(img_folder))
+            l_img_path = [os.path.join(img_folder, f'frame_{i:04d}.jpg') for i in range(frame_count)]
+        else:
+            suffixes = ('.jpg', '.jpeg', '.png', '.webp')
+            l_img_path = [file for file in os.listdir(args.img_folder) if file.endswith(suffixes) and file[0] != '.']
 
         # Loading
         model = load_model(args.model_name)
@@ -199,7 +222,10 @@ if __name__ == "__main__":
 
             # Get input in the right format for the model
             img_size = model.img_size
-            x, img_pil_nopad = open_image(os.path.join(args.img_folder, img_path), img_size)
+            if args.video_path:
+                x, img_pil_nopad = open_image(img_path, img_size)
+            else:
+                x, img_pil_nopad = open_image(os.path.join(args.img_folder, img_path), img_size)
 
             # Get camera parameters
             p_x, p_y = None, None

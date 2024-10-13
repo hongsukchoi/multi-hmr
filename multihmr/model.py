@@ -8,13 +8,13 @@ import numpy as np
 import roma
 import copy
 
-from utils import unpatch, inverse_perspective_projection, undo_focal_length_normalization, undo_log_depth
-from blocks import Dinov2Backbone, FourierPositionEncoding, TransformerDecoder, SMPL_Layer
-from utils import rot6d_to_rotmat, rebatch, pad_to_max
+from multihmr.utils import unpatch, inverse_perspective_projection, undo_focal_length_normalization, undo_log_depth
+from multihmr.blocks import Dinov2Backbone, FourierPositionEncoding, TransformerDecoder, SMPL_Layer
+from multihmr.utils import rot6d_to_rotmat, rebatch, pad_to_max
 import torch.nn as nn
 import numpy as np
 import einops
-from utils.constants import MEAN_PARAMS
+from multihmr.utils.constants import MEAN_PARAMS
 
 class Model(nn.Module):
     """ A ViT backbone followed by a "HPH" head (stack of cross attention layers with queries corresponding to detected humans.) """
