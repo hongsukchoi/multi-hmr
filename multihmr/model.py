@@ -506,6 +506,45 @@ def _sigmoid(x):
   return y
 
 
+def load_model(ckpt_path, device=torch.device('cuda')):
+    # Load the checkpoint
+    ckpt = torch.load(ckpt_path, map_location=device)
+
+    # Get arguments saved in the checkpoint to rebuild the model
+    kwargs = {}
+    for k,v in vars(ckpt['args']).items():
+            kwargs[k] = v
+
+    # Build the model.
+    kwargs['type'] = ckpt['args'].train_return_type
+    kwargs['img_size'] = ckpt['args'].img_size[0]
+    model = Model(**kwargs).to(device)
+
+    # Load weights into model.
+    model.load_state_dict(ckpt['model_state_dict'], strict=False)
+    print("Weights have been loaded")
+
+    return model
+
+
+def forward_model(model, input_image, camera_parameters,
+                  det_thresh=0.3,
+                  nms_kernel_size=1,
+                 ):
+        
+    """ Make a forward pass on an input image and camera parameters. """
+    
+    # Forward the model.
+    with torch.no_grad():
+        with torch.cuda.amp.autocast(enabled=True):
+            humans = model(input_image, 
+                           is_training=False, 
+                           nms_kernel_size=int(nms_kernel_size),
+                           det_thresh=det_thresh,
+                           K=camera_parameters)
+
+    return humans
+
 
 if __name__ == "__main__":
     Model()

@@ -50,3 +50,49 @@ def unpatch(data, patch_size=14, c=3, img_size=224):
     data = data.reshape([B,h,w,p,q,c])
     data = torch.einsum('nhwpqc->nchpwq', data)
     return data.reshape([B,c,img_size,img_size])
+
+
+
+def open_image(img_path, img_size):
+    """ Open image at path, resize and pad """
+
+    # Open and reshape
+    img_pil = Image.open(img_path).convert('RGB')
+    
+    # Get original size
+    original_width, original_height = img_pil.size
+
+    # reisze to the target size while keeping the aspect ratio
+    img_pil = ImageOps.contain(img_pil, (img_size,img_size)) 
+
+    # Get new size
+    new_width, new_height = img_pil.size
+    # Calculate scaling factors
+    scale_x = original_width / new_width
+    scale_y = original_height / new_height
+
+    # Keep a copy for visualisations.
+    img_pil_bis = ImageOps.pad(img_pil.copy(), size=(img_size,img_size), color=(255, 255, 255)) # image is keep centered
+    img_pil = ImageOps.pad(img_pil, size=(img_size,img_size)) # pad with zero on the smallest side
+    
+    # Get new size
+    padded_new_width, padded_new_height = img_pil_bis.size
+    pad_width = (new_width - padded_new_width) / 2
+    pad_height = (new_height - padded_new_height) / 2
+    
+    # Calculate translation
+    translate_x = pad_width * scale_x
+    translate_y = pad_height * scale_y
+    
+    # Create the affine transformation matrix
+    affine_matrix = np.array([
+        [scale_x, 0, translate_x],
+        [0, scale_y, translate_y]
+    ])
+
+    # Go to numpy 
+    resize_img = np.asarray(img_pil)
+
+    # Normalize and go to torch.
+    resize_img = normalize_rgb(resize_img)
+    return resize_img, img_pil_bis, affine_matrix
